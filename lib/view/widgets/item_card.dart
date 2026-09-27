@@ -8,23 +8,28 @@ class ItemCardNews extends StatelessWidget {
   final Article article;
   @override
   Widget build(BuildContext context) {
-    return Container(
-      padding: EdgeInsets.all(8),
-      margin: EdgeInsets.symmetric(horizontal: 16),
-      child: Column(
-        crossAxisAlignment: .start,
-        spacing: 10,
-        children: [
-          ImageNews(image:  article.urlToImage ?? imageNull),
-          Text(
-            article.author ?? "",
-            style: Theme.of(context).textTheme.titleSmall,
-          ),
-          Text(
-            article.title ?? "",
-            style: Theme.of(context).textTheme.titleMedium,
-          ),
-        ],
+    return InkWell(
+      onTap: () {
+        Navigator.pushNamed(context, "details", arguments: article);
+      },
+      child: Container(
+        padding: EdgeInsets.all(8),
+        margin: EdgeInsets.symmetric(horizontal: 16),
+        child: Column(
+          crossAxisAlignment: .start,
+          spacing: 10,
+          children: [
+            ImageNews(image: article.urlToImage ?? imageNull),
+            Text(
+              article.author ?? "",
+              style: Theme.of(context).textTheme.titleSmall,
+            ),
+            Text(
+              article.title ?? "",
+              style: Theme.of(context).textTheme.titleMedium,
+            ),
+          ],
+        ),
       ),
     );
   }
