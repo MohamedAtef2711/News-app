@@ -1,8 +1,9 @@
 import 'package:flutter/material.dart';
-import 'package:news_app/core/api/result_api.dart';
-import 'package:news_app/data/api_manger.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:news_app/data/news_api_model.dart';
 import 'package:news_app/view/widgets/item_card.dart';
+import 'package:news_app/view_model/news_cubit.dart';
+import 'package:news_app/view_model/news_state.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -12,28 +13,33 @@ class HomeScreen extends StatefulWidget {
 }
 
 class _HomeScreenState extends State<HomeScreen> {
-  List<Article> articles = [];
-  String? error;
-  bool isLoading = true;
   @override
   void initState() {
     super.initState();
-    getArticles();
   }
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(title: Text("News"), centerTitle: true),
-      body: isLoading
-          ? _isLoading()
-          : error != null
-          ? _errorView()
-          : _successView(),
+    return BlocProvider(
+      create: (context) => NewsCubit()..getArticles(),
+      child: Scaffold(
+        appBar: AppBar(title: Text("News"), centerTitle: true),
+        body: BlocBuilder<NewsCubit, NewsState>(
+          builder: (context, state) {
+            if (state is NewsSuccess) {
+              return _successView(state.articles);
+            }
+            if (state is NewsError) {
+              return _errorView(state.errorMessage);
+            }
+            return _isLoading();
+          },
+        ),
+      ),
     );
   }
 
-  Widget _successView() {
+  Widget _successView(List<Article> articles) {
     return ListView.builder(
       itemBuilder: (context, index) => ItemCardNews(article: articles[index]),
       itemCount: articles.length,
@@ -44,22 +50,10 @@ class _HomeScreenState extends State<HomeScreen> {
     return Center(child: CircularProgressIndicator());
   }
 
-  Widget _errorView() {
+  Widget _errorView(String error) {
     return Center(
-      child: Text(error!, style: TextStyle(fontSize: 30, color: Colors.red)),
+      child: Text(error, style: TextStyle(fontSize: 30, color: Colors.red)),
     );
-  }
-
-  void getArticles() async {
-    var result = await ApiManger.getNews();
-    switch (result) {
-      case Success<NewsModel>():
-        articles = result.data.articles ?? [];
-      case Error<NewsModel>():
-        error = result.errorMessage;
-    }
-    isLoading = false;
-    setState(() {});
   }
 }
 
